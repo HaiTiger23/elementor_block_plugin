@@ -71,6 +71,7 @@ Supported field types:
 * text
 * textarea
 * number
+* color
 * image
 * select
 * repeater (optional - advanced)

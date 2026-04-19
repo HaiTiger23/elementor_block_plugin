@@ -295,6 +295,7 @@ function cbb_get_type_default( $type ) {
         case 'text':
         case 'textarea':
         case 'select':
+        case 'color':
             return '';
         case 'number':
             return 0;
@@ -333,6 +334,8 @@ function cbb_sanitize_field_value( $value, $type ) {
             return esc_url_raw( $value );
         case 'select':
             return sanitize_text_field( $value );
+        case 'color':
+            return cbb_sanitize_color_value( $value );
         case 'boolean':
             return (bool) $value;
         case 'repeater':
@@ -340,6 +343,42 @@ function cbb_sanitize_field_value( $value, $type ) {
         default:
             return sanitize_text_field( $value );
     }
+}
+
+/**
+ * Sanitize color values to keep only safe CSS color formats.
+ *
+ * @param mixed $value Raw color value.
+ * @return string Sanitized color value.
+ */
+function cbb_sanitize_color_value( $value ) {
+    if ( ! is_scalar( $value ) ) {
+        return '';
+    }
+
+    $value = trim( (string) $value );
+    if ( $value === '' ) {
+        return '';
+    }
+
+    $hex = sanitize_hex_color( $value );
+    if ( $hex ) {
+        return $hex;
+    }
+
+    if ( preg_match( '/^rgba?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i', $value ) ) {
+        return $value;
+    }
+
+    if ( preg_match( '/^hsla?\(\s*[\d.]+(?:deg|grad|rad|turn)?\s*,\s*[\d.]+%\s*,\s*[\d.]+%(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i', $value ) ) {
+        return $value;
+    }
+
+    if ( preg_match( '/^var\(\s*--[a-z0-9_-]+\s*(?:,\s*[^()]+)?\s*\)$/i', $value ) ) {
+        return $value;
+    }
+
+    return '';
 }
 
 /**

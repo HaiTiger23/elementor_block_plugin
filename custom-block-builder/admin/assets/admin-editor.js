@@ -262,6 +262,10 @@
                     html += '<input type="number" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + defaultVal + '" />';
                     break;
 
+                case 'color':
+                    html += '<input type="color" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + normalizeColorDefault(field.default) + '" />';
+                    break;
+
                 case 'image':
                     {
                         const imageDefault = normalizeImageDefault(field.default);
@@ -395,6 +399,11 @@
         }
 
         return { url: '', id: 0, alt: '' };
+    }
+
+    function normalizeColorDefault(defaultValue) {
+        const value = typeof defaultValue === 'string' ? defaultValue.trim() : '';
+        return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value) ? value : '#000000';
     }
 
     function bindMediaPickers(container) {

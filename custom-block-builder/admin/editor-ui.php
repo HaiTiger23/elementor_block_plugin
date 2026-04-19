@@ -282,6 +282,10 @@ function cbb_render_schema_helper_meta_box( $post ) {
             <span class="cbb-type-desc"><?php esc_html_e( 'Numeric input', 'custom-block-builder' ); ?></span>
         </div>
         <div class="cbb-field-type-item">
+            <strong>color</strong>
+            <span class="cbb-type-desc"><?php esc_html_e( 'Color picker (hex, rgb, hsl)', 'custom-block-builder' ); ?></span>
+        </div>
+        <div class="cbb-field-type-item">
             <strong>image</strong>
             <span class="cbb-type-desc"><?php esc_html_e( 'Image picker (WordPress Media Library)', 'custom-block-builder' ); ?></span>
         </div>

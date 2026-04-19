@@ -141,6 +141,14 @@ abstract class CBB_Elementor_Widget_Base extends \Elementor\Widget_Base {
                 ) );
                 break;
 
+            case 'color':
+                $container->add_control( $field_name, array(
+                    'label'   => $label,
+                    'type'    => \Elementor\Controls_Manager::COLOR,
+                    'default' => $default,
+                ) );
+                break;
+
             case 'boolean':
                 $container->add_control( $field_name, array(
                     'label'        => $label,
