@@ -176,6 +176,11 @@ function cbb_save_block_meta( $post_id, $post ) {
         update_post_meta( $post_id, '_cbb_js_minified', cbb_minify_js( $js ) );
     }
 
+    // Save Icon.
+    if ( isset( $_POST['cbb_icon'] ) ) {
+        update_post_meta( $post_id, '_cbb_icon', sanitize_text_field( wp_unslash( $_POST['cbb_icon'] ) ) );
+    }
+
     // Increment version.
     $current_version = (int) get_post_meta( $post_id, '_cbb_version', true );
     update_post_meta( $post_id, '_cbb_version', $current_version + 1 );

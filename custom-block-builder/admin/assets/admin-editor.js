@@ -199,7 +199,9 @@
         container.innerHTML = renderFields(schema.fields);
 
         // Bind change events for auto-preview.
-        $(container).find('input, textarea, select').off('input change').on('input change', function () {
+        $(container).find('input, textarea, select').off('input.cbb change.cbb').on('input.cbb change.cbb', function (e) {
+            // Prevent event bubbling if needed, but here we want to catch all.
+            
             // Update toggle label.
             if ($(this).hasClass('cbb-toggle-switch')) {
                 $(this).siblings('span').text(this.checked ? 'Yes' : 'No');
@@ -208,9 +210,10 @@
         });
 
         bindMediaPickers(container);
+        bindRepeaterEvents(container);
     }
 
-    function renderFields(fields, pathPrefix = '') {
+    function renderFields(fields, pathPrefix = '', currentValues = {}) {
         let html = '';
 
         fields.forEach(function (field) {
@@ -218,7 +221,7 @@
                 html += '<div class="cbb-test-section">';
                 html += '<h4 class="cbb-test-section-title">' + escapeHtml(field.label || 'Section') + '</h4>';
                 if (field.fields && Array.isArray(field.fields)) {
-                    html += renderFields(field.fields, pathPrefix);
+                    html += renderFields(field.fields, pathPrefix, currentValues);
                 }
                 html += '</div>';
                 return;
@@ -236,51 +239,53 @@
                 html += '<div class="cbb-test-group">';
                 html += '<h5 class="cbb-test-group-title">' + label + '</h5>';
                 if (field.fields && Array.isArray(field.fields)) {
-                    html += renderFields(field.fields, fieldPath);
+                    html += renderFields(field.fields, fieldPath, currentValues[field.name] || {});
                 }
                 html += '</div>';
                 return;
             }
 
-            const defaultVal = field.default !== undefined ? escapeHtml(String(field.default)) : '';
+            const rawVal = currentValues[field.name] !== undefined ? currentValues[field.name] : field.default;
+            const valStr = rawVal !== undefined ? String(rawVal) : '';
+            const escapedVal = escapeHtml(valStr);
 
-            html += '<div class="cbb-field-group">';
+            html += '<div class="cbb-field-group" data-field-type="' + escapeHtml(type) + '">';
             html += '<label class="cbb-field-label" for="' + fieldId + '">' + label;
             html += '<span class="cbb-field-type-badge">' + escapeHtml(type) + '</span>';
             html += '</label>';
 
             switch (type) {
                 case 'text':
-                    html += '<input type="text" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + defaultVal + '" />';
+                    html += '<input type="text" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + escapedVal + '" />';
                     break;
 
                 case 'textarea':
-                    html += '<textarea id="' + fieldId + '" data-field="' + escapedPath + '">' + defaultVal + '</textarea>';
+                    html += '<textarea id="' + fieldId + '" data-field="' + escapedPath + '">' + escapedVal + '</textarea>';
                     break;
 
                 case 'number':
-                    html += '<input type="number" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + defaultVal + '" />';
+                    html += '<input type="number" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + escapedVal + '" />';
                     break;
 
                 case 'color':
-                    html += '<input type="color" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + normalizeColorDefault(field.default) + '" />';
+                    html += '<input type="color" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + normalizeColorDefault(rawVal) + '" />';
                     break;
 
                 case 'image':
                     {
-                        const imageDefault = normalizeImageDefault(field.default);
+                        const imageVal = normalizeImageDefault(rawVal);
                         html += '<div class="cbb-image-control">';
-                        html += '<input type="hidden" id="' + fieldId + '" data-field="' + escapedPath + '" data-image-id="' + escapeHtml(String(imageDefault.id)) + '" data-image-alt="' + escapeHtml(imageDefault.alt) + '" value="' + escapeHtml(imageDefault.url) + '" />';
+                        html += '<input type="hidden" id="' + fieldId + '" data-field="' + escapedPath + '" data-image-id="' + escapeHtml(String(imageVal.id)) + '" data-image-alt="' + escapeHtml(imageVal.alt) + '" value="' + escapeHtml(imageVal.url) + '" />';
                         html += '<div class="cbb-image-preview-wrap">';
-                        if (imageDefault.url) {
-                            html += '<img src="' + escapeHtml(imageDefault.url) + '" alt="' + escapeHtml(imageDefault.alt || label) + '" class="cbb-image-preview" />';
+                        if (imageVal.url) {
+                            html += '<img src="' + escapeHtml(imageVal.url) + '" alt="' + escapeHtml(imageVal.alt || label) + '" class="cbb-image-preview" />';
                         } else {
                             html += '<div class="cbb-image-placeholder">No image selected</div>';
                         }
                         html += '</div>';
                         html += '<div class="cbb-image-actions">';
                         html += '<button type="button" class="button button-secondary cbb-image-select" data-target="' + escapedPath + '">Choose Image</button>';
-                        html += '<button type="button" class="button-link-delete cbb-image-remove" data-target="' + escapedPath + '"' + (imageDefault.url ? '' : ' style="display:none;"') + '>Remove</button>';
+                        html += '<button type="button" class="button-link-delete cbb-image-remove" data-target="' + escapedPath + '"' + (imageVal.url ? '' : ' style="display:none;"') + '>Remove</button>';
                         html += '</div>';
                         html += '</div>';
                     }
@@ -290,7 +295,7 @@
                     html += '<select id="' + fieldId + '" data-field="' + escapedPath + '">';
                     if (field.options && Array.isArray(field.options)) {
                         field.options.forEach(function (opt) {
-                            const selected = String(opt) === String(field.default) ? ' selected' : '';
+                            const selected = String(opt) === String(rawVal) ? ' selected' : '';
                             html += '<option value="' + escapeHtml(opt) + '"' + selected + '>' + escapeHtml(opt) + '</option>';
                         });
                     }
@@ -298,26 +303,49 @@
                     break;
 
                 case 'boolean':
-                    const checked = field.default ? ' checked' : '';
+                    const isChecked = !!rawVal;
+                    const checkedAttr = isChecked ? ' checked' : '';
                     html += '<div class="cbb-toggle-wrapper">';
-                    html += '<input type="checkbox" id="' + fieldId + '" data-field="' + escapedPath + '" class="cbb-toggle-switch"' + checked + ' />';
-                    html += '<span>' + (field.default ? 'Yes' : 'No') + '</span>';
+                    html += '<input type="checkbox" id="' + fieldId + '" data-field="' + escapedPath + '" class="cbb-toggle-switch"' + checkedAttr + ' />';
+                    html += '<span>' + (isChecked ? 'Yes' : 'No') + '</span>';
                     html += '</div>';
                     break;
 
                 case 'repeater':
-                    const repeaterDefault = Array.isArray(field.default) ? JSON.stringify(field.default) : '[]';
-                    html += '<textarea id="' + fieldId + '" data-field="' + escapedPath + '" data-type="repeater" placeholder=\'[{"key":"value"}]\' style="height:80px;font-family:monospace;font-size:11px;">' + escapeHtml(repeaterDefault) + '</textarea>';
-                    html += '<p style="font-size:10px;color:#64748b;margin-top:4px;">Enter JSON array for repeater data.</p>';
+                    const items = Array.isArray(rawVal) ? rawVal : [];
+                    html += '<div class="cbb-repeater-container" data-field="' + escapedPath + '" data-schema=\'' + escapeHtml(JSON.stringify(field.fields || [])) + '\'>';
+                    html += '<div class="cbb-repeater-items">';
+                    items.forEach(function (item, index) {
+                        html += renderRepeaterItem(field.fields || [], item, fieldPath, index);
+                    });
+                    html += '</div>';
+                    html += '<div class="cbb-repeater-actions">';
+                    html += '<button type="button" class="button button-secondary cbb-repeater-add" data-target="' + escapedPath + '">+ Add Item</button>';
+                    html += '</div>';
+                    html += '</div>';
                     break;
 
                 default:
-                    html += '<input type="text" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + defaultVal + '" />';
+                    html += '<input type="text" id="' + fieldId + '" data-field="' + escapedPath + '" value="' + escapedVal + '" />';
             }
 
             html += '</div>';
         });
 
+        return html;
+    }
+
+    function renderRepeaterItem(fields, values, parentPath, index) {
+        let html = '<div class="cbb-repeater-item" data-index="' + index + '">';
+        html += '<div class="cbb-repeater-item-header">';
+        html += '<span class="cbb-repeater-item-handle dashicons dashicons-menu"></span>';
+        html += '<span class="cbb-repeater-item-title">Item #' + (index + 1) + '</span>';
+        html += '<button type="button" class="cbb-repeater-item-remove" title="Remove Item"><span class="dashicons dashicons-no-alt"></span></button>';
+        html += '</div>';
+        html += '<div class="cbb-repeater-item-content">';
+        html += renderFields(fields, parentPath + '.' + index, values);
+        html += '</div>';
+        html += '</div>';
         return html;
     }
 
@@ -331,33 +359,53 @@
 
         if (!schema.fields) return data;
 
-        extractFields(schema.fields, data, '');
+        const container = document.getElementById('cbb-test-data-form');
+        extractFields(schema.fields, data, '', container);
         return data;
     }
 
-    function extractFields(fields, data, pathPrefix = '') {
+    function extractFields(fields, data, pathPrefix, context) {
+        if (!context) return;
+
         fields.forEach(function (field) {
             if (field.type === 'section') {
                 if (field.fields && Array.isArray(field.fields)) {
-                    extractFields(field.fields, data, pathPrefix);
+                    extractFields(field.fields, data, pathPrefix, context);
                 }
                 return;
             }
 
             if (!field.name) return;
 
+            const fieldPath = pathPrefix ? pathPrefix + '.' + field.name : field.name;
+
             if (field.type === 'group') {
                 const groupValue = {};
                 if (field.fields && Array.isArray(field.fields)) {
-                    const groupPath = pathPrefix ? pathPrefix + '.' + field.name : field.name;
-                    extractFields(field.fields, groupValue, groupPath);
+                    const groupPath = fieldPath;
+                    extractFields(field.fields, groupValue, groupPath, context);
                 }
                 data[field.name] = groupValue;
                 return;
             }
 
-            const fieldPath = pathPrefix ? pathPrefix + '.' + field.name : field.name;
-            const el = document.querySelector('[data-field="' + fieldPath + '"]');
+            if (field.type === 'repeater') {
+                const repeaterContainer = context.querySelector('.cbb-repeater-container[data-field="' + fieldPath + '"]');
+                const items = [];
+                if (repeaterContainer) {
+                    const itemEls = repeaterContainer.querySelectorAll(':scope > .cbb-repeater-items > .cbb-repeater-item');
+                    itemEls.forEach(function (itemEl, index) {
+                        const itemData = {};
+                        const itemPath = fieldPath + '.' + index;
+                        extractFields(field.fields || [], itemData, itemPath, itemEl);
+                        items.push(itemData);
+                    });
+                }
+                data[field.name] = items;
+                return;
+            }
+
+            const el = context.querySelector('[data-field="' + fieldPath + '"]');
             if (!el) return;
 
             const type = field.type || 'text';
@@ -368,13 +416,6 @@
                     break;
                 case 'number':
                     data[field.name] = parseFloat(el.value) || 0;
-                    break;
-                case 'repeater':
-                    try {
-                        data[field.name] = JSON.parse(el.value);
-                    } catch (e) {
-                        data[field.name] = [];
-                    }
                     break;
                 case 'image':
                     data[field.name] = el.value || '';
@@ -455,6 +496,94 @@
             });
 
             mediaFrame.open();
+        });
+    }
+
+    function bindRepeaterEvents(container) {
+        const $container = $(container);
+
+        $container.off('click.cbbRepeater').on('click.cbbRepeater', '.cbb-repeater-add, .cbb-repeater-item-remove', function (e) {
+            e.preventDefault();
+
+            if ($(this).hasClass('cbb-repeater-add')) {
+                const $repeater = $(this).closest('.cbb-repeater-container');
+                const $itemsWrap = $repeater.find('> .cbb-repeater-items');
+                const fieldPath = $repeater.data('field');
+                const schema = $repeater.data('schema') || [];
+                const index = $itemsWrap.find('> .cbb-repeater-item').length;
+
+                const itemHtml = renderRepeaterItem(schema, {}, fieldPath, index);
+                const $item = $(itemHtml);
+                
+                $itemsWrap.append($item);
+                
+                // Re-bind media pickers for the new item.
+                bindMediaPickers($item);
+                
+                // Re-bind repeater events if nested.
+                bindRepeaterEvents($item);
+
+                schedulePreview();
+            } else if ($(this).hasClass('cbb-repeater-item-remove')) {
+                const $item = $(this).closest('.cbb-repeater-item');
+                const $itemsWrap = $item.parent();
+                
+                $item.remove();
+                
+                // Renumber remaining items.
+                $itemsWrap.find('> .cbb-repeater-item').each(function (i) {
+                    $(this).attr('data-index', i);
+                    $(this).find('> .cbb-repeater-item-header .cbb-repeater-item-title').text('Item #' + (i + 1));
+                    
+                    // We also need to update data-field attributes of all inputs inside.
+                    // This is complex for nested structures, but necessary if we use absolute paths in data-field.
+                    // Actually, extractFields uses querySelector with absolute paths.
+                    // Let's update them.
+                });
+                
+                updateRepeaterPaths($itemsWrap);
+                schedulePreview();
+            }
+        });
+    }
+
+    function updateRepeaterPaths($itemsWrap) {
+        const $repeater = $itemsWrap.closest('.cbb-repeater-container');
+        const parentPath = $repeater.data('field');
+
+        $itemsWrap.find('> .cbb-repeater-item').each(function (index) {
+            const oldIndex = $(this).attr('data-index');
+            const newIndex = index;
+            
+            if (oldIndex != newIndex) {
+                $(this).attr('data-index', newIndex);
+                $(this).find('> .cbb-repeater-item-header .cbb-repeater-item-title').text('Item #' + (newIndex + 1));
+                
+                const oldPathBase = parentPath + '.' + oldIndex;
+                const newPathBase = parentPath + '.' + newIndex;
+
+                // Update all data-field attributes within this item.
+                $(this).find('[data-field]').each(function() {
+                    const currentPath = $(this).attr('data-field');
+                    if (currentPath && currentPath.startsWith(oldPathBase)) {
+                        const newPath = newPathBase + currentPath.substring(oldPathBase.length);
+                        $(this).attr('data-field', newPath);
+                        
+                        if ($(this).attr('id') && $(this).attr('id').startsWith('cbb-test-')) {
+                            $(this).attr('id', 'cbb-test-' + newPath.replace(/\./g, '-'));
+                        }
+                    }
+                });
+
+                // Also update data-target on buttons.
+                $(this).find('[data-target]').each(function() {
+                    const currentTarget = $(this).attr('data-target');
+                    if (currentTarget && currentTarget.startsWith(oldPathBase)) {
+                        const newTarget = newPathBase + currentTarget.substring(oldPathBase.length);
+                        $(this).attr('data-target', newTarget);
+                    }
+                });
+            }
         });
     }
 

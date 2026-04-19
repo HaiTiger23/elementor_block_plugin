@@ -140,12 +140,19 @@ function cbb_render_template( $view, $css, $js, $data, $block_id, $instance_id =
 
     // Append isolated JS.
     if ( ! empty( $js ) ) {
-        $minified_js = ( $block_id !== 'preview' ) ? get_post_meta( $block_id, '_cbb_js_minified', true ) : '';
+        $minified_js = ( $block_id !== 'preview' ) ? get_post_meta( $block_id, '_cbb_css_minified', true ) : '';
         if ( empty( $minified_js ) ) {
             $minified_js = cbb_minify_js( $js );
         }
-        $output .= '<script>(function(){ var blockEl = document.querySelector(".' . esc_js( $instance_class ) . '");' . "\n" . $minified_js . "\n" . '})();</script>';
+        // Pass the block element and the data to the JS wrapper.
+        // This provides a clearer API: 'blockEl' is the root element, 'data' is the field values.
+        $js_wrapper = '(function(blockEl, data){' . "\n"
+                    . '  if(!blockEl) return;' . "\n"
+                    . $minified_js . "\n"
+                    . '})(document.querySelector(".' . esc_js( $instance_class ) . '"), ' . json_encode( $data ) . ');';
+        $output .= '<script>' . $js_wrapper . '</script>';
     }
+
 
     return $output;
 }
@@ -415,12 +422,18 @@ function cbb_scope_css( $css, $prefix ) {
                     continue;
                 }
 
-                // Handle & or :host as the prefix itself.
-                if ( $s === '&' || $s === ':host' ) {
+                // Handle &, :host, html, body, :root as the prefix itself.
+                if ( in_array( $s, array( '&', ':host', 'html', 'body', ':root' ), true ) ) {
                     $prefixed[] = $prefix;
                 } elseif ( strpos( $s, '&' ) === 0 ) {
                     $prefixed[] = $prefix . substr( $s, 1 );
                 } elseif ( strpos( $s, ':host' ) === 0 ) {
+                    $prefixed[] = $prefix . substr( $s, 5 );
+                } elseif ( strpos( $s, 'html' ) === 0 && ( strlen( $s ) === 4 || ! preg_match( '/^[a-zA-Z0-9_-]/', $s[4] ) ) ) {
+                    $prefixed[] = $prefix . substr( $s, 4 );
+                } elseif ( strpos( $s, 'body' ) === 0 && ( strlen( $s ) === 4 || ! preg_match( '/^[a-zA-Z0-9_-]/', $s[4] ) ) ) {
+                    $prefixed[] = $prefix . substr( $s, 4 );
+                } elseif ( strpos( $s, ':root' ) === 0 ) {
                     $prefixed[] = $prefix . substr( $s, 5 );
                 } else {
                     $prefixed[] = $prefix . ' ' . $s;
