@@ -1,0 +1,30 @@
+/**
+ * Custom Block Builder — Frontend Styles
+ *
+ * Minimal base styles for rendered custom blocks on the frontend.
+ */
+
+/* Base block wrapper */
+.cbb-block {
+    position: relative;
+    box-sizing: border-box;
+}
+
+.cbb-block *,
+.cbb-block *::before,
+.cbb-block *::after {
+    box-sizing: border-box;
+}
+
+/* Ensure images are responsive by default */
+.cbb-block img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Clear floats within blocks */
+.cbb-block::after {
+    content: '';
+    display: table;
+    clear: both;
+}

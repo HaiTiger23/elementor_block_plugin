@@ -1,0 +1,506 @@
+/**
+ * Custom Block Builder — Admin Editor Styles
+ *
+ * Styles for the block editor meta boxes, code editors, and preview panel.
+ */
+
+/* ============================================
+   General Editor Styles
+   ============================================ */
+
+.cbb-editor-wrapper {
+    position: relative;
+}
+
+.cbb-code-textarea {
+    width: 100%;
+    min-height: 200px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 2;
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #f9f9f9;
+    resize: vertical;
+}
+
+/* CodeMirror overrides for better aesthetics */
+.cbb-editor-wrapper .CodeMirror {
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    height: auto;
+    min-height: 180px;
+    max-height: 500px;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cbb-editor-wrapper .CodeMirror-gutters {
+    background: #181825;
+    border-right: 1px solid #313244;
+}
+
+.cbb-editor-wrapper .CodeMirror-linenumber {
+    color: #6c7086;
+}
+
+.cbb-editor-wrapper .CodeMirror-cursor {
+    border-left: 2px solid #cba6f7;
+}
+
+.cbb-editor-wrapper .CodeMirror-selected {
+    background: #45475a !important;
+}
+
+.cbb-editor-wrapper .CodeMirror-focused .CodeMirror-selected {
+    background: #585b70 !important;
+}
+
+/* Editor Hint */
+.cbb-editor-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    background: #f0f6fc;
+    border: 1px solid #c8d8e9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+}
+
+.cbb-editor-hint .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #2271b1;
+}
+
+/* Available Variables Badge */
+.cbb-available-vars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.cbb-var-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-size: 11px;
+    font-family: monospace;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* ============================================
+   Preview Panel
+   ============================================ */
+
+.cbb-preview-container {
+    margin: -6px -12px -12px;
+}
+
+.cbb-preview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-bottom: 1px solid #475569;
+}
+
+.cbb-preview-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cbb-preview-toolbar .button-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #6366f1;
+    border-color: #4f46e5;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
+}
+
+.cbb-preview-toolbar .button-primary:hover {
+    background: #4f46e5;
+    border-color: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+}
+
+.cbb-preview-toolbar .button-primary .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+}
+
+.cbb-auto-preview-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #cbd5e1;
+    cursor: pointer;
+}
+
+.cbb-auto-preview-label input[type="checkbox"] {
+    margin: 0;
+}
+
+.cbb-preview-status {
+    font-size: 12px;
+    color: #94a3b8;
+    transition: color 0.3s ease;
+}
+
+.cbb-preview-status.loading {
+    color: #fbbf24;
+}
+
+.cbb-preview-status.success {
+    color: #34d399;
+}
+
+.cbb-preview-status.error {
+    color: #f87171;
+}
+
+/* Split preview layout */
+.cbb-preview-split {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: 400px;
+}
+
+.cbb-preview-form-panel {
+    padding: 16px;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.cbb-preview-iframe-panel {
+    padding: 16px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.cbb-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cbb-panel-title .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #6366f1;
+}
+
+/* Test Data Form Fields */
+.cbb-test-data-form .cbb-field-group {
+    margin-bottom: 14px;
+}
+
+.cbb-test-data-form .cbb-test-group {
+    margin: 10px 0 14px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.cbb-test-data-form .cbb-test-group-title {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.cbb-test-data-form .cbb-field-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: capitalize;
+}
+
+.cbb-test-data-form .cbb-field-type-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    margin-left: 6px;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: 3px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.cbb-test-data-form input[type="text"],
+.cbb-test-data-form input[type="number"],
+.cbb-test-data-form input[type="url"],
+.cbb-test-data-form textarea,
+.cbb-test-data-form select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: #fff;
+}
+
+.cbb-test-data-form input:focus,
+.cbb-test-data-form textarea:focus,
+.cbb-test-data-form select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.cbb-test-data-form textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.cbb-test-data-form .cbb-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cbb-test-data-form .cbb-image-control {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cbb-test-data-form .cbb-image-preview-wrap {
+    width: 100%;
+    min-height: 96px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cbb-test-data-form .cbb-image-preview {
+    max-width: 100%;
+    max-height: 160px;
+    display: block;
+}
+
+.cbb-test-data-form .cbb-image-placeholder {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.cbb-test-data-form .cbb-image-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cbb-test-data-form .cbb-toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #d1d5db;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: none;
+    padding: 0;
+}
+
+.cbb-test-data-form .cbb-toggle-switch:checked {
+    background: #6366f1;
+}
+
+.cbb-test-data-form .cbb-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.cbb-test-data-form .cbb-toggle-switch:checked::after {
+    transform: translateX(18px);
+}
+
+.cbb-placeholder-text {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Preview iframe */
+.cbb-preview-iframe-wrapper {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    min-height: 300px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#cbb-preview-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    border: none;
+    background: #fff;
+}
+
+/* ============================================
+   Block Info (Sidebar)
+   ============================================ */
+
+.cbb-info-box {
+    margin: -6px -12px -12px;
+    padding: 0;
+}
+
+.cbb-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cbb-info-row:last-child {
+    border-bottom: none;
+}
+
+.cbb-info-row label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.cbb-info-row code {
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.cbb-version-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, #34d399, #10b981);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 12px;
+}
+
+.cbb-shortcode-display {
+    font-size: 11px !important;
+    word-break: break-all;
+}
+
+/* ============================================
+   Schema Helper (Sidebar)
+   ============================================ */
+
+.cbb-helper-box {
+    margin: -6px -12px -12px;
+    padding: 0;
+}
+
+.cbb-field-type-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cbb-field-type-item strong {
+    font-family: monospace;
+    color: #6366f1;
+    font-size: 13px;
+}
+
+.cbb-type-desc {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.cbb-helper-example-title {
+    padding: 8px 14px 0;
+    margin: 0;
+}
+
+.cbb-helper-code {
+    margin: 8px 14px 14px;
+    padding: 10px;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media screen and (max-width: 1200px) {
+    .cbb-preview-split {
+        grid-template-columns: 1fr;
+    }
+
+    .cbb-preview-form-panel {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        max-height: 300px;
+    }
+}
