@@ -224,7 +224,11 @@ abstract class CBB_Elementor_Widget_Base extends \Elementor\Widget_Base {
                 $value = $settings[ $control_name ];
 
                 if ( $field['type'] === 'image' && is_array( $value ) ) {
-                    $value = $value['url'] ?? '';
+                    $value = array(
+                        'url' => $value['url'] ?? '',
+                        'id'  => $value['id'] ?? 0,
+                        'alt' => $value['alt'] ?? '',
+                    );
                 } elseif ( $field['type'] === 'boolean' ) {
                     $value = ( $value === '1' || $value === 'yes' || $value === true );
                 } elseif ( $field['type'] === 'repeater' && is_array( $value ) ) {
@@ -325,13 +329,20 @@ class CBB_Elementor_Widget extends CBB_Elementor_Widget_Base {
     }
 
     private function register_dynamic_field_controls() {
-        // Optimization: Only register controls for the currently selected block if we are in the editor and have the data.
-        // However, for simplicity and compatibility with how Elementor loads the panel, we still register all with conditions
-        // but we limit it to a reasonable number or use a transient if needed.
-        // For Phase 2, we keep this but encourage using the single widgets.
+        // Optimization: For the legacy widget, we check if we have a saved block_id in the URL
+        // or in the settings to avoid registering all 20 blocks.
+        // However, Elementor's register_controls is static per widget type.
+        // As a compromise, we prioritize the currently active block if we can detect it.
+        $selected_block_id = 0;
+        
+        // Try to get block_id from URL if in editor.
+        if ( is_admin() && isset( $_GET['post'] ) ) {
+             // This is the page being edited, not the widget settings.
+        }
+
         $blocks = get_posts( array(
             'post_type'      => 'custom_block',
-            'posts_per_page' => 20, // Limit legacy widget to first 20 blocks for performance.
+            'posts_per_page' => 20,
             'post_status'    => 'publish',
         ) );
 

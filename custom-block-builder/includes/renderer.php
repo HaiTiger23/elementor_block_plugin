@@ -97,7 +97,15 @@ function cbb_render_template( $view, $css, $js, $data, $block_id, $instance_id =
 
     // Extract data into variables for use in the template.
     // Each field name becomes a PHP variable.
-    extract( $data, EXTR_SKIP );
+    // Optimization: If it's an image array, also provide a {name}_url shortcut.
+    $processed_data = array();
+    foreach ( $data as $key => $val ) {
+        $processed_data[ $key ] = $val;
+        if ( is_array( $val ) && isset( $val['url'] ) ) {
+            $processed_data[ $key . '_url' ] = $val['url'];
+        }
+    }
+    extract( $processed_data, EXTR_SKIP );
 
     // Render the view template.
     ob_start();
@@ -115,8 +123,16 @@ function cbb_render_template( $view, $css, $js, $data, $block_id, $instance_id =
             $e->getMessage(),
             $e->getLine()
         );
+        
+        // Only show full error details if we are in admin or edit mode.
+        $show_full_error = is_admin() || ( defined( 'ELEMENTOR_PATH' ) && \Elementor\Plugin::$instance->editor->is_edit_mode() );
+        
         return '<div class="cbb-block ' . esc_attr( $block_type_class ) . ' ' . esc_attr( $instance_class ) . '">'
-             . '<p style="color:red;padding:20px;border:1px solid red;background:#fff5f5;">' . esc_html( $error_message ) . '</p>'
+             . '<div style="color:#d32f2f;padding:20px;border:2px solid #ef5350;background:#ffebee;border-radius:8px;font-family:sans-serif;">'
+             . '<h4 style="margin:0 0 10px;">' . esc_html__( 'Component Render Error', 'custom-block-builder' ) . '</h4>'
+             . '<p style="margin:0;font-size:13px;line-height:1.5;">' . esc_html( $error_message ) . '</p>'
+             . ( $show_full_error ? '<pre style="margin-top:10px;padding:10px;background:rgba(0,0,0,0.05);font-size:11px;overflow:auto;">' . esc_html( $e->getTraceAsString() ) . '</pre>' : '' )
+             . '</div>'
              . '</div>';
     }
     $html = ob_get_clean();
@@ -336,7 +352,11 @@ function cbb_sanitize_field_value( $value, $type ) {
             return floatval( $value );
         case 'image':
             if ( is_array( $value ) ) {
-                return esc_url_raw( $value['url'] ?? '' );
+                return array(
+                    'url' => esc_url_raw( $value['url'] ?? '' ),
+                    'id'  => absint( $value['id'] ?? 0 ),
+                    'alt' => sanitize_text_field( $value['alt'] ?? '' ),
+                );
             }
             return esc_url_raw( $value );
         case 'select':
